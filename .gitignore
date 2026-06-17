@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 生成物（PDF出力・キャッシュ）
+out/
+.cache/
+
+# Claude Code ローカル設定
+.claude/settings.local.json
