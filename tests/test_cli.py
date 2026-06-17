@@ -144,6 +144,28 @@ def test_未知のprefer名はエラー() -> None:
         )
 
 
+# --- 設定ファイル関連フラグ -------------------------------------------------
+
+def test_fromとtoが無ければエラー() -> None:
+    result = runner.invoke(cli.app, [])
+    assert result.exit_code != 0
+
+
+def test_show_configは探索結果を表示して終了() -> None:
+    result = runner.invoke(cli.app, ["--show-config"])
+    assert result.exit_code == 0
+    assert "使用される設定" in result.stdout
+
+
+def test_存在しないconfig指定はエラー() -> None:
+    result = runner.invoke(
+        cli.app,
+        ["--from", "分倍河原", "--to", "成田空港", "--depart", "13:19",
+         "--config", "/no/such/file.toml"],
+    )
+    assert result.exit_code != 0
+
+
 def test_条件に合う候補が無ければ全件にフォールバック() -> None:
     # フィクスチャ(ex 無)はスカイライナー等を含まない → フォールバック
     result = runner.invoke(

@@ -1,0 +1,39 @@
+# 駅プリセット
+#
+# [aliases] : CLI で打ちやすい別名 → Yahoo!乗換案内で使う正式駅名
+# [presets] : よく使う出発駅・到着駅（補完や既定値に利用）
+
+[aliases]
+bubaigawara = "分倍河原"
+mizonokuchi   = "溝の口"
+narita       = "成田空港"
+haneda       = "羽田空港"
+shinjuku     = "新宿"
+
+[presets]
+# 自分の定番の出発駅
+origins = ["分倍河原", "溝の口"]
+# 自分の定番の行き先
+destinations = ["成田空港", "羽田空港"]
+
+# ルート選択条件
+#   any_lines           : いずれかの路線名を含むルートに絞る（ハード）
+#   via                 : これらの駅をすべて通るルートに絞る（ハード）
+#   deny_lines          : これらの路線名を使うルートを除外する（ハード）
+#   prefer_lines        : これらの路線名を含むルートを上位に並べる（ソフト）
+#   use_limited_express : 検索時に有料特急を候補へ含める（ex=1）
+
+# 全行き先に効く既定ルール（必要に応じて記述。空でも可）
+# 例: 常に高速バスを避けたい → deny_lines = ["高速バス"]
+[defaults]
+
+# 行き先別ルール（正式駅名をキーにすると自動適用される）
+[preferences."成田空港"]
+use_limited_express = true
+any_lines = ["スカイライナー", "成田エクスプレス"]
+
+# 羽田は田園都市線（溝の口経由）優先・京王線は使わない
+[preferences."羽田空港"]
+any_lines = ["京急"]
+deny_lines = ["京王線"]
+prefer_lines = ["田園都市線"]

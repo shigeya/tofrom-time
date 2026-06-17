@@ -144,6 +144,21 @@ tofrom-time --from 分倍河原 --to 成田空港 --arrive 14:43 --pdf ./out/
 - 駅名は乗換が発生する駅と始発・終着を表示（直通区間の途中駅は省略）。
 - `--json` オプションで構造化出力も可能にする（精算ツール連携用）。
 
+## 設定ファイルの探索
+
+設定（`stations.toml`）は次の順で探索し、最初に見つかったものを使う（[config.py](src/tofrom_time/config.py)）:
+
+1. `--config PATH`（明示指定）
+2. 環境変数 `TOFROM_STATIONS`
+3. カレントの `./config/stations.toml`（リポジトリ作業時）
+4. `~/.config/tofrom-time/stations.toml`（個人の既定。`XDG_CONFIG_HOME` を尊重）
+5. パッケージ同梱のデフォルト `src/tofrom_time/data/stations.toml`（wheel にも同梱）
+
+同梱デフォルトがあるため、`uv tool install` 等でグローバル導入しても別名・ルールが効く。
+`--show-config` で探索結果、`--init-config` で個人設定の雛形作成（同梱デフォルトを複製）。
+リポジトリの `config/stations.toml` と同梱 `data/stations.toml` は別物（前者は開発時の作業用、
+後者は配布時のデフォルト）なので、デフォルトを変える際は両方を揃える。
+
 ## ルート選択条件（preferences）
 
 行き先ごとに「使いたい列車・経由」を `config/stations.toml` の `[preferences.*]` で定義し、

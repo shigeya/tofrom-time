@@ -10,7 +10,15 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from .config import Stations, load_rules, load_stations
+from .config import (
+    Stations,
+    candidate_config_paths,
+    init_user_config,
+    load_rules,
+    load_stations,
+    resolve_config_path,
+    user_config_path,
+)
 from .models import Route
 from .pdf import pdf_filename, save_route_pdf
 from .preference import Preference, Rules, filter_routes
@@ -133,10 +141,34 @@ def _route_to_dict(route: Route) -> dict:
     }
 
 
+def _do_init_config() -> None:
+    try:
+        created = init_user_config()
+    except FileExistsError as exc:
+        console.print(
+            f"[yellow]既に存在します:[/yellow] {exc}（上書きするには手動で編集/削除してください）"
+        )
+        return
+    console.print(f"[green]個人設定を作成しました:[/green] {created}")
+
+
+def _do_show_config(config_path: str | None) -> None:
+    resolved = resolve_config_path(config_path)
+    console.print(f"[bold]使用される設定:[/bold] {resolved or '（見つからず・空設定）'}")
+    console.print("[dim]探索順:[/dim]")
+    if config_path:
+        mark = "✓" if resolved else "✗"
+        console.print(f"  {mark} --config: {config_path}")
+    for candidate in candidate_config_paths():
+        mark = "✓" if candidate.exists() else " "
+        console.print(f"  {mark} {candidate}")
+    console.print(f"[dim]個人設定の標準パス:[/dim] {user_config_path()}")
+
+
 @app.command()
 def main(
-    origin: str = typer.Option(..., "--from", help="出発駅（別名可）"),
-    destination: str = typer.Option(..., "--to", help="到着駅（別名可）"),
+    origin: str | None = typer.Option(None, "--from", help="出発駅（別名可）"),
+    destination: str | None = typer.Option(None, "--to", help="到着駅（別名可）"),
     depart: str | None = typer.Option(None, "--depart", help="出発時刻 HH:MM"),
     arrive: str | None = typer.Option(None, "--arrive", help="到着時刻 HH:MM"),
     on: str | None = typer.Option(None, "--date", help="日付 YYYY-MM-DD（既定: 当日）"),
@@ -152,10 +184,31 @@ def main(
     show_all: bool = typer.Option(
         False, "--all", help="選択条件を無視して全候補を表示"
     ),
+    config_path: str | None = typer.Option(
+        None, "--config", help="設定ファイル（stations.toml）のパスを明示指定"
+    ),
+    init_config: bool = typer.Option(
+        False, "--init-config", help="個人設定ファイルを ~/.config に作成して終了"
+    ),
+    show_config: bool = typer.Option(
+        False, "--show-config", help="設定ファイルの探索結果を表示して終了"
+    ),
 ) -> None:
     """経路を検索し、選択ルートを 1 行テキストで出力する。"""
-    stations = load_stations()
-    rules = load_rules()
+    if init_config:
+        _do_init_config()
+        return
+    if show_config:
+        _do_show_config(config_path)
+        return
+
+    if not origin or not destination:
+        raise typer.BadParameter("--from と --to は必須です")
+    if config_path is not None and resolve_config_path(config_path) is None:
+        raise typer.BadParameter(f"設定ファイルが見つかりません: {config_path}")
+
+    stations = load_stations(config_path)
+    rules = load_rules(config_path)
     destination_resolved = stations.resolve(destination)
     preference = resolve_preference(
         prefer=prefer,
