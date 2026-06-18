@@ -3,10 +3,18 @@ name = "tofrom-time"
 version = "0.1.0"
 description = "旅費精算用の経路表示 CLI（Yahoo!乗換案内ベース）"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Shigeya Suzuki", email = "shigeya@wide.ad.jp" }
 ]
 requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Topic :: Utilities",
+]
+
 dependencies = [
     "httpx>=0.28",
     "beautifulsoup4>=4.12",
@@ -15,6 +23,9 @@ dependencies = [
     "rich>=13.9",
     "playwright>=1.49",
 ]
+
+[project.urls]
+Repository = "https://github.com/shigeya/tofrom-time"
 
 [project.scripts]
 tofrom-time = "tofrom_time.cli:app"
